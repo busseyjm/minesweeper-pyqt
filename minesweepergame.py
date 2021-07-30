@@ -1,4 +1,5 @@
 import random
+import math
 
 #coord system for this game:
 #using the basis of a 2d array
@@ -23,23 +24,28 @@ import random
 #   E       = empty and clicked
 #   1-8     = bomb count and clicked
 #   F       = flagged
-#   ?       = question marked
+#   B       = bomb
+#   C       = clicked bomb
+#   W       = wrongly flagged bomb
 
 random.seed(12345)
 
 class game():
-    buttons = {}
-    boardback = ""
-    boardfront = ""
-    bombs = ""
-    bombcount = ""
-    sizex = ""
-    sizey = ""
+    #front and back arrays, front is what the user sees
+    boardback = dict()
+    boardfront = dict()
 
-    def __init__(self):
-        buttons = {}
-        sizex = 0
-        sizey = 0
+    #coordinates of every bomb, in tuples
+    bombs = []
+
+    #how many bombs there are
+    bombcount = 0
+
+    #size of the game
+    sizex = 0
+    sizey = 0
+
+    #def __init__(self):
 
     #perhaps add a reference to the gridlayout, and generate the board here
     # requires a bit more knowledge of layouts
@@ -59,22 +65,26 @@ class game():
             self.sizex = 30
             self.sizey = 16
 
-        self.boardback = [['X']*self.sizex for i in range(self.sizey)]
-        self.boardback = [['U']*self.sizex for i in range(self.sizey)]
-        # for y in range(0,self.sizey):
-        #     for x in range(0,self.sizex):
-        #         print(str(x) + " " + str(y))
-        #         self.boardback[y][x] = 'E'
-        #         self.boardfront[y][x] = ' '
+        for y in range(0,self.sizey):
+            for x in range(0,self.sizex):
+                self.boardback[y,x] = 'X'
+                self.boardfront[y,x] = 'U'
 
+        # generate a sequence of unique numbers that are within the max square count
         bombs = random.sample(range(0,(self.sizex*self.sizey)), self.bombcount)
 
+        # translate the numbers into coordinates within the grid
         for i in bombs:
             bombx = i % self.sizex
+            i = math.floor(i/self.sizex)
             bomby = i % self.sizey
-            self.boardback[bomby][bombx] = 'B'
+            self.boardback[bomby,bombx] = 'B'
+            self.bombs.append((bomby,bombx))
         
+        self.calculatebackend()
+
     def generatecustomgame(self, height, width, percentbombs):
+        #TODO
         self.sizex = width
         self.sizey = height
         print(random.sample(range(1,100), 5))
@@ -82,149 +92,124 @@ class game():
     def calculatebackend(self):
         for y in range(0,self.sizey):
             for x in range(0,self.sizex):
-                if (self.boardback[y][x] == 'B'):
+                if (self.boardback[y,x] == 'B'):
                     continue
 
                 bombcount = 0
 
-                #corners: (0,0)(0,sizex-1)(sizey-1,0)(sizey-1,sizex-1)
-
-                #top left corner
-                if (y==0) and (x==0):
-                    if (self.boardback[y][x+1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y+1][x] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y+1][x+1] == 'B'):
-                        bombcount += 1
-                    self.boardback[y][x] = bombcount
-                    continue
-
-                #top right corner
-                if (y==0) and (x==self.sizex-1):
-                    if (self.boardback[y][x-1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y+1][x] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y+1][x-1] == 'B'):
-                        bombcount += 1
-                    self.boardback[y][x] = bombcount
-                    continue
-
-                #bottom left corner
-                if (y==self.sizey-1) and (x==0):
-                    if (self.boardback[y-1][x] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y-1][x+1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y][x+1] == 'B'):
-                        bombcount += 1
-                    self.boardback[y][x] = bombcount
-                    continue
-                    
-                #bottom right corner
-                if (y==self.sizey-1) and (x==self.sizex-1):
-                    if (self.boardback[y-1][x] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y-1][x-1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y][x-1] == 'B'):
-                        bombcount += 1
-                    self.boardback[y][x] = bombcount
-                    continue
-
-                #edge cases for borders (corners excluded):
-                #all x for y=0
-                #all x for y=sizey - 1
-                #all y for x=0
-                #all y for y = sizex - 1
-
-                #top border
-                if (y==0):
-                    if (self.boardback[y][x-1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y+1][x-1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y+1][x] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y+1][x+1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y][x+1] == 'B'):
-                        bombcount += 1
-                    self.boardback[y][x] = bombcount
-                    continue
-                
-                #bottom border
-                if (y==self.sizey-1):
-                    if (self.boardback[y][x-1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y-1][x-1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y-1][x] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y-1][x+1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y][x+1] == 'B'):
-                        bombcount += 1
-                    self.boardback[y][x] = bombcount
-                    continue
-
-                #left border
-                if (x==0):
-                    if (self.boardback[y-1][x] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y-1][x+1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y][x+1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y+1][x+1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y+1][x] == 'B'):
-                        bombcount += 1
-                    self.boardback[y][x] = bombcount
-                    continue
-
-                #right border
-                if (x==self.sizex-1):
-                    if (self.boardback[y-1][x] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y-1][x-1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y][x-1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y+1][x-1] == 'B'):
-                        bombcount += 1
-                    if (self.boardback[y+1][x] == 'B'):
-                        bombcount += 1
-                    self.boardback[y][x] = bombcount
-                    continue
-
-                #non edge case
-                if (self.boardback[y-1][x-1] == 'B'):
+                if (((y-1,x-1) in self.boardback) and self.boardback[y-1,x-1] == 'B'):
                     bombcount += 1     
-                if (self.boardback[y-1][x] == 'B'):
+                if (((y-1,x) in self.boardback) and self.boardback[y-1,x] == 'B'):
                     bombcount += 1 
-                if (self.boardback[y-1][x+1] == 'B'):
+                if (((y-1,x+1) in self.boardback) and self.boardback[y-1,x+1] == 'B'):
                     bombcount += 1 
-                if (self.boardback[y][x-1] == 'B'):
+                if (((y,x-1) in self.boardback) and self.boardback[y,x-1] == 'B'):
                     bombcount += 1 
-                # if (self.boardback[y][x] == 'B'):
+                # if (((y,x) in self.boardback) and  self.boardback[y,x] == 'B'):
                 #     bombcount += 1 
-                if (self.boardback[y][x+1] == 'B'):
+                if (((y,x+1) in self.boardback) and self.boardback[y,x+1] == 'B'):
                     bombcount += 1 
-                if (self.boardback[y+1][x-1] == 'B'):
+                if (((y+1,x-1) in self.boardback) and self.boardback[y+1,x-1] == 'B'):
                     bombcount += 1 
-                if (self.boardback[y+1][x] == 'B'):
+                if (((y+1,x) in self.boardback) and self.boardback[y+1,x] == 'B'):
                     bombcount += 1 
-                if (self.boardback[y+1][x+1] == 'B'):
+                if (((y+1,x+1) in self.boardback) and self.boardback[y+1,x+1] == 'B'):
                     bombcount += 1   
-                self.boardback[y][x] = bombcount
+                self.boardback[y,x] = bombcount
                 continue
-        print(self.boardback)
 
-
-    def addbutton(self, y, x, button):
-        self.buttons[y,x] = button
-
+    # recursive reveal function, called when clicking on a square that is not a bomb
+    # will reveal all 0s adjacent to the clicked square, and all numbered squares
+    #   adjacent to any 0 squares
+    def reveal(self,y,x):
+        #recursion base case, stop when it reaches a revealed square
+        if (self.boardfront[y,x] != 'U'):
+            return
+        #any square adjacent to a zero is either a 0 or a number
+        # show the number, recurse on the 0s
+        if (self.boardfront[y,x] == 'U'):
+            if (self.boardback[y,x] == 0):
+                self.boardfront[y,x] = 'E'
+                if ((y-1,x-1) in self.boardback):
+                    self.reveal(y-1,x-1)
+                if ((y-1,x) in self.boardback):
+                    self.reveal(y-1,x)
+                if ((y-1,x+1) in self.boardback):
+                    self.reveal(y-1,x+1)
+                if ((y,x-1) in self.boardback):
+                    self.reveal(y,x-1)
+                # if ((y,x) in self.boardback):
+                #     self.reveal(y,x)
+                if ((y,x+1) in self.boardback):
+                    self.reveal(y,x+1)
+                if ((y+1,x-1) in self.boardback):
+                    self.reveal(y+1,x-1)
+                if ((y+1,x) in self.boardback):
+                    self.reveal(y+1,x)
+                if ((y+1,x+1) in self.boardback):
+                    self.reveal(y+1,x+1)
+            if (self.boardback[y,x] in range(1,9)):
+                self.boardfront[y,x] = self.boardback[y,x]
+        
     def clicked(self, y, x, rightclick):
-        print("clicked " + str(y) + ", " + str(x) + str(rightclick))
+        print("clicked " + str(y) + ", " + str(x) + " " + str(rightclick))
+        print(self.boardback[y,x])
+
+        if (self.boardfront[y,x] == 'E'):
+            return
+
+        if (rightclick):
+            #flag and unflag the rightclicked square
+            if (self.boardfront[y,x] == 'F'):
+                self.boardfront[y,x] = 'U'
+            else:
+                self.boardfront[y,x] = 'F'
+            return
+
+        #unclicked buttons
+        if (self.boardfront[y,x] == 'U'):
+            if (self.boardback[y,x] == 0):
+                self.reveal(y,x)
+                self.debugprint()
+                return
+
+            if (self.boardback[y,x] in range(0,9)):
+                self.boardfront[y,x] = self.boardback[y,x]
+                return
+
+            if (self.boardback[y,x] == 'B'):
+                # TODO: lose game code here (clicked bomb, replace all unflagged unclicked bombs with bombs)
+                # until then just put a clicked bomb
+                self.boardfront[y,x] = 'C'
+                return
+
+        #clicked buttons (quick clearing by clicking numbers w/ flagged spaces adjacent)
+        # TODO    
+        
+
+    def getboardback(self):
+        return self.boardback
+
+    def getboardfront(self):
+        return self.boardfront
+
+    def debugprint(self):
+        print("Boardback:")
+        for y in range(0,self.sizey):
+            print("[", end="")
+            for x in range(0,self.sizex):
+                if (x!=self.sizex-1):
+                    print(self.boardback[y,x], end=", ")
+                else:
+                    print(self.boardback[y,x], end="")
+            print("]")
+
+        print("Boardfront:")
+        for y in range(0,self.sizey):
+            print("[", end="")
+            for x in range(0,self.sizex):
+                if (x!=self.sizex-1):
+                    print(self.boardfront[y,x], end=", ")
+                else:
+                    print(self.boardfront[y,x], end="")
+            print("]")
