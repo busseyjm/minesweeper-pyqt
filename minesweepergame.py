@@ -34,6 +34,7 @@ class game():
     #front and back arrays, front is what the user sees
     boardback = dict()
     boardfront = dict()
+    changes = dict()
 
     #coordinates of every bomb, in tuples
     bombs = []
@@ -47,8 +48,6 @@ class game():
 
     #def __init__(self):
 
-    #perhaps add a reference to the gridlayout, and generate the board here
-    # requires a bit more knowledge of layouts
     def generategame(self, difficulty):
         if (difficulty == "EASY"):
             self.bombcount = 10
@@ -88,6 +87,12 @@ class game():
         self.sizex = width
         self.sizey = height
         print(random.sample(range(1,100), 5))
+
+    # function to maintain a running list of changes, so that the frontend may update just those cells
+    def setfront(self,y,x,value):
+        self.boardfront[y,x] = value
+        self.changes[y,x] = value
+
 
     def calculatebackend(self):
         for y in range(0,self.sizey):
@@ -129,7 +134,7 @@ class game():
         # show the number, recurse on the 0s
         if (self.boardfront[y,x] == 'U'):
             if (self.boardback[y,x] == 0):
-                self.boardfront[y,x] = 'E'
+                self.setfront(y,x,'E')
                 if ((y-1,x-1) in self.boardback):
                     self.reveal(y-1,x-1)
                 if ((y-1,x) in self.boardback):
@@ -149,7 +154,7 @@ class game():
                 if ((y+1,x+1) in self.boardback):
                     self.reveal(y+1,x+1)
             if (self.boardback[y,x] in range(1,9)):
-                self.boardfront[y,x] = self.boardback[y,x]
+                self.setfront(y,x,self.boardback[y,x])
         
     def clicked(self, y, x, rightclick):
         print("clicked " + str(y) + ", " + str(x) + " " + str(rightclick))
@@ -161,9 +166,10 @@ class game():
         if (rightclick):
             #flag and unflag the rightclicked square
             if (self.boardfront[y,x] == 'F'):
-                self.boardfront[y,x] = 'U'
+                self.setfront(y,x,'U')
+                
             else:
-                self.boardfront[y,x] = 'F'
+                self.setfront(y,x,'F')
             return
 
         #unclicked buttons
@@ -174,13 +180,13 @@ class game():
                 return
 
             if (self.boardback[y,x] in range(0,9)):
-                self.boardfront[y,x] = self.boardback[y,x]
+                self.setfront(y,x,self.boardback[y,x])
                 return
 
             if (self.boardback[y,x] == 'B'):
                 # TODO: lose game code here (clicked bomb, replace all unflagged unclicked bombs with bombs)
                 # until then just put a clicked bomb
-                self.boardfront[y,x] = 'C'
+                self.setfront(y,x,'C')
                 return
 
         #clicked buttons (quick clearing by clicking numbers w/ flagged spaces adjacent)
@@ -192,6 +198,12 @@ class game():
 
     def getboardfront(self):
         return self.boardfront
+
+    def getchanges(self):
+        returnval = self.changes
+        self.changes = dict()
+        print(returnval)
+        return returnval
 
     def debugprint(self):
         print("Boardback:")

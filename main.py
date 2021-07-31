@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, QRunnable, QThreadPool, QSize
 from minesweepergame import game
 from PyQt5.QtWidgets import (QAbstractButton, QApplication, QLabel, QWidget, QMessageBox,
 QPushButton, QGridLayout)
-from PyQt5.QtGui import QAbstractOpenGLFunctions, QIcon
+from PyQt5.QtGui import QIcon
 
 MINESWEEPER_GAME_SIZE_X = 30
 MINESWEEPER_GAME_SIZE_Y = 16
@@ -12,35 +12,35 @@ MINESWEEPER_GAME_DIFFICULTY = "EXPERT"
 
 #multithreaded board update
 class BoardRefresh(QRunnable):
-    def __init__(self, buttons, board):
+    def __init__(self, buttons, changes):
         self.buttons = buttons
-        self.board = board
+        self.changes = changes
         super().__init__()
 
     def run(self):
-        # TODO refactor this to NOT update every square every cycle
-        # will make a list containing changed tuples, and only update them
-        for y, x in self.buttons:
-            if (self.board[y,x] == 'U'):
+        #for y, x in self.buttons:
+        for y, x in self.changes:
+            if (self.changes[y,x] == 'U'):
+                self.buttons[y,x].setIcon(QIcon("assets/minesweeper_00.png"))
                 continue
 
-            if (self.board[y,x] == 'E'):
+            if (self.changes[y,x] == 'E'):
                 self.buttons[y,x].setIcon(QIcon("assets/minesweeper_01.png"))
                 continue
 
-            if (self.board[y,x] == 'F'):
+            if (self.changes[y,x] == 'F'):
                 self.buttons[y,x].setIcon(QIcon("assets/minesweeper_02.png"))
                 continue
 
-            if (self.board[y,x] == 'B'):
+            if (self.changes[y,x] == 'B'):
                 self.buttons[y,x].setIcon(QIcon("assets/minesweeper_05.png"))
                 continue
 
-            if (self.board[y,x] == 'C'):
+            if (self.changes[y,x] == 'C'):
                 self.buttons[y,x].setIcon(QIcon("assets/minesweeper_06.png"))
                 continue
 
-            if (self.board[y,x] == 'W'):
+            if (self.changes[y,x] == 'W'):
                 self.buttons[y,x].setIcon(QIcon("assets/minesweeper_07.png"))
                 continue
 
@@ -48,10 +48,10 @@ class BoardRefresh(QRunnable):
             #   the '1' icon is _08.png
             #   the '8' icon is _15.png
             iconstr = ""
-            if (self.board[y,x] in range(1,3)):
-                iconstr = "0" + str(self.board[y,x]+7)
+            if (self.changes[y,x] in range(1,3)):
+                iconstr = "0" + str(self.changes[y,x]+7)
             else:
-                iconstr = str(self.board[y,x]+7)
+                iconstr = str(self.changes[y,x]+7)
             self.buttons[y,x].setIcon(QIcon("assets/minesweeper_" + iconstr + ".png"))
 
 
@@ -77,7 +77,8 @@ class mainboard(QWidget):
 
     def refreshboard(self):
         pool = QThreadPool.globalInstance()
-        refresh = BoardRefresh(self.buttons, self.gameinst.getboardfront())
+        #refresh = BoardRefresh(self.buttons, self.gameinst.getboardfront())
+        refresh = BoardRefresh(self.buttons, self.gameinst.getchanges())
         pool.start(refresh)
 
     def initUI(self):   
