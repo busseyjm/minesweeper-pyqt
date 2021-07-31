@@ -192,7 +192,7 @@ class game():
             #flag and unflag the rightclicked square
             if (self.boardfront[y,x] == 'F'):
                 self.setfront(y,x,'U')
-            else:
+            elif (self.boardfront[y,x] == 'U'):
                 self.setfront(y,x,'F')
             return
 
@@ -225,7 +225,22 @@ class game():
                 return
 
         #clicked buttons (quick clearing by clicking numbers w/ flagged spaces adjacent)
-        # TODO    
+        if (self.boardfront[y,x] in range(1,9)):
+            print("clicked a: " + str(self.boardfront[y,x]))
+            num = self.boardfront[y,x]
+            flagc = 0
+            for xoffset in range(-1,2):
+                for yoffset in range(-1,2):
+                    if (((y+yoffset,x+xoffset) in self.boardfront) and self.boardfront[y+yoffset,x+xoffset] == 'F'):
+                        flagc = flagc+1
+            if (num == flagc):
+                for xoffset in range(-1,2):
+                    for yoffset in range(-1,2):
+                        if (((y+yoffset,x+xoffset) in self.boardfront) and self.boardfront[y+yoffset,x+xoffset] == 'U'):
+                            self.clicked(y+yoffset, x+xoffset, False)
+
+
+
         
 
     def getboardback(self):
