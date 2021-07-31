@@ -114,25 +114,10 @@ class game():
                     continue
 
                 bombcount = 0
-
-                if (((y-1,x-1) in self.boardback) and self.boardback[y-1,x-1] == 'B'):
-                    bombcount += 1     
-                if (((y-1,x) in self.boardback) and self.boardback[y-1,x] == 'B'):
-                    bombcount += 1 
-                if (((y-1,x+1) in self.boardback) and self.boardback[y-1,x+1] == 'B'):
-                    bombcount += 1 
-                if (((y,x-1) in self.boardback) and self.boardback[y,x-1] == 'B'):
-                    bombcount += 1 
-                # if (((y,x) in self.boardback) and  self.boardback[y,x] == 'B'):
-                #     bombcount += 1 
-                if (((y,x+1) in self.boardback) and self.boardback[y,x+1] == 'B'):
-                    bombcount += 1 
-                if (((y+1,x-1) in self.boardback) and self.boardback[y+1,x-1] == 'B'):
-                    bombcount += 1 
-                if (((y+1,x) in self.boardback) and self.boardback[y+1,x] == 'B'):
-                    bombcount += 1 
-                if (((y+1,x+1) in self.boardback) and self.boardback[y+1,x+1] == 'B'):
-                    bombcount += 1   
+                for xoffset in range(-1,2):
+                    for yoffset in range(-1,2):
+                        if (((y+yoffset,x+xoffset) in self.boardback) and self.boardback[y+yoffset,x+xoffset] == 'B'):
+                            bombcount += 1     
                 self.boardback[y,x] = bombcount
                 continue
 
@@ -157,33 +142,17 @@ class game():
 
             if (self.boardback[y,x] == 0):
                 self.setfront(y,x,'E')
-                if ((y-1,x-1) in self.boardback):
-                    self.reveal(y-1,x-1)
-                if ((y-1,x) in self.boardback):
-                    self.reveal(y-1,x)
-                if ((y-1,x+1) in self.boardback):
-                    self.reveal(y-1,x+1)
-                if ((y,x-1) in self.boardback):
-                    self.reveal(y,x-1)
-                # if ((y,x) in self.boardback):
-                #     self.reveal(y,x)
-                if ((y,x+1) in self.boardback):
-                    self.reveal(y,x+1)
-                if ((y+1,x-1) in self.boardback):
-                    self.reveal(y+1,x-1)
-                if ((y+1,x) in self.boardback):
-                    self.reveal(y+1,x)
-                if ((y+1,x+1) in self.boardback):
-                    self.reveal(y+1,x+1)
+                for xoffset in range(-1,2):
+                    for yoffset in range(-1,2):
+                        if ((y+yoffset,x+xoffset) in self.boardback):
+                            self.reveal(y+yoffset,x+xoffset)
+                            
             if (self.boardback[y,x] in range(1,9)):
                 self.setfront(y,x,self.boardback[y,x])
         
     def clicked(self, y, x, rightclick):
         if (self.gamestate == "LOSS" or self.gamestate == "WIN"):
             return
-
-        print("clicked " + str(y) + ", " + str(x) + " " + str(rightclick))
-        print(self.boardback[y,x])
 
         if (self.boardfront[y,x] == 'E'):
             return
@@ -232,16 +201,13 @@ class game():
             for xoffset in range(-1,2):
                 for yoffset in range(-1,2):
                     if (((y+yoffset,x+xoffset) in self.boardfront) and self.boardfront[y+yoffset,x+xoffset] == 'F'):
-                        flagc = flagc+1
+                        flagc += 1
             if (num == flagc):
                 for xoffset in range(-1,2):
                     for yoffset in range(-1,2):
                         if (((y+yoffset,x+xoffset) in self.boardfront) and self.boardfront[y+yoffset,x+xoffset] == 'U'):
                             self.clicked(y+yoffset, x+xoffset, False)
-
-
-
-        
+  
 
     def getboardback(self):
         return self.boardback
