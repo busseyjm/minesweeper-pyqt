@@ -46,9 +46,17 @@ class game():
     sizex = 0
     sizey = 0
 
+    #state of the game
+    # UNSTARTED
+    # STARTED
+    # WIN
+    # LOSS
+    gamestate = ""
+
     #def __init__(self):
 
     def generategame(self, difficulty):
+        self.gamestate = "UNSTARTED"
         if (difficulty == "EASY"):
             self.bombcount = 10
             self.sizex = 8
@@ -157,6 +165,9 @@ class game():
                 self.setfront(y,x,self.boardback[y,x])
         
     def clicked(self, y, x, rightclick):
+        if (self.gamestate == "LOSS" or self.gamestate == "WIN"):
+            return
+
         print("clicked " + str(y) + ", " + str(x) + " " + str(rightclick))
         print(self.boardback[y,x])
 
@@ -167,7 +178,6 @@ class game():
             #flag and unflag the rightclicked square
             if (self.boardfront[y,x] == 'F'):
                 self.setfront(y,x,'U')
-                
             else:
                 self.setfront(y,x,'F')
             return
@@ -187,6 +197,19 @@ class game():
                 # TODO: lose game code here (clicked bomb, replace all unflagged unclicked bombs with bombs)
                 # until then just put a clicked bomb
                 self.setfront(y,x,'C')
+                self.gamestate = "LOSS"
+                #update board w/ incorrect flags and unfound bombs
+                for yloop in range(0,self.sizey):
+                    for xloop in range(0,self.sizex):
+                        #skip the clicked bomb
+                        if (xloop == x and yloop == x):
+                            continue
+                        # if back not bomb and front is flag, wrong flag
+                        if (self.boardfront[yloop,xloop] == 'F' and self.boardback[yloop,xloop] != 'B'):
+                            self.setfront(yloop, xloop, 'W')
+                        # if back bomb and front unclicked, bomb
+                        if (self.boardfront[yloop,xloop] == 'U' and self.boardback[yloop,xloop] == 'B'):
+                            self.setfront(yloop, xloop, 'B')
                 return
 
         #clicked buttons (quick clearing by clicking numbers w/ flagged spaces adjacent)
@@ -204,6 +227,9 @@ class game():
         self.changes = dict()
         print(returnval)
         return returnval
+
+    def getgamestate(self):
+        return self.gamestate
 
     def debugprint(self):
         print("Boardback:")
