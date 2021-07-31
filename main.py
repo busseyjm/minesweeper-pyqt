@@ -6,9 +6,9 @@ from PyQt5.QtWidgets import (QAbstractButton, QApplication, QLabel, QWidget, QMe
 QPushButton, QGridLayout)
 from PyQt5.QtGui import QIcon
 
-MINESWEEPER_GAME_SIZE_X = 30
-MINESWEEPER_GAME_SIZE_Y = 16
-MINESWEEPER_GAME_DIFFICULTY = "EXPERT"
+MINESWEEPER_GAME_SIZE_X = 8
+MINESWEEPER_GAME_SIZE_Y = 8
+MINESWEEPER_GAME_DIFFICULTY = "EASY"
 
 #multithreaded board update
 class BoardRefresh(QRunnable):
@@ -73,6 +73,7 @@ class mainboard(QWidget):
         else:
             self.gameinst.clicked(pos_y, pos_x, False)
         #QApplication.processEvents()
+        self.gameinst.debugprint()
         self.refreshboard()
 
     def refreshboard(self):

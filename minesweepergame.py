@@ -46,9 +46,12 @@ class game():
     sizex = 0
     sizey = 0
 
+    #uncovered squares, win when 0
+    uncleared = -1
+
+
     #state of the game
-    # UNSTARTED
-    # STARTED
+    # PLAY
     # WIN
     # LOSS
     gamestate = ""
@@ -56,7 +59,7 @@ class game():
     #def __init__(self):
 
     def generategame(self, difficulty):
-        self.gamestate = "UNSTARTED"
+        self.gamestate = "PLAY"
         if (difficulty == "EASY"):
             self.bombcount = 10
             self.sizex = 8
@@ -71,6 +74,8 @@ class game():
             self.bombcount = 99
             self.sizex = 30
             self.sizey = 16
+
+        self.uncleared = (self.sizex*self.sizey) - self.bombcount
 
         for y in range(0,self.sizey):
             for x in range(0,self.sizex):
@@ -141,6 +146,15 @@ class game():
         #any square adjacent to a zero is either a 0 or a number
         # show the number, recurse on the 0s
         if (self.boardfront[y,x] == 'U'):
+
+            self.uncleared = self.uncleared - 1
+            if (self.uncleared == 0):
+                self.gamestate = "WIN"
+                #set any unflagged bombs as flagged
+                for yloop, xloop in self.bombs:
+                    if (self.boardback[yloop,xloop] == 'B' and self.boardfront[yloop,xloop] != 'F'):
+                        self.setfront(yloop,xloop,'F')
+
             if (self.boardback[y,x] == 0):
                 self.setfront(y,x,'E')
                 if ((y-1,x-1) in self.boardback):
@@ -184,18 +198,16 @@ class game():
 
         #unclicked buttons
         if (self.boardfront[y,x] == 'U'):
-            if (self.boardback[y,x] == 0):
-                self.reveal(y,x)
-                self.debugprint()
-                return
+            # if (self.boardback[y,x] == 0):
+            #     self.reveal(y,x)
+            #     return
 
             if (self.boardback[y,x] in range(0,9)):
-                self.setfront(y,x,self.boardback[y,x])
+                self.reveal(y,x)
+                #self.setfront(y,x,self.boardback[y,x])
                 return
 
             if (self.boardback[y,x] == 'B'):
-                # TODO: lose game code here (clicked bomb, replace all unflagged unclicked bombs with bombs)
-                # until then just put a clicked bomb
                 self.setfront(y,x,'C')
                 self.gamestate = "LOSS"
                 #update board w/ incorrect flags and unfound bombs
@@ -232,6 +244,10 @@ class game():
         return self.gamestate
 
     def debugprint(self):
+        print("State: " + self.gamestate)
+
+        print("Uncleared: " + str(self.uncleared))
+
         print("Boardback:")
         for y in range(0,self.sizey):
             print("[", end="")
